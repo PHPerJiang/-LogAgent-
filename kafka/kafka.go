@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/Shopify/sarama"
 )
@@ -25,8 +25,8 @@ func SendMessag2Kafka(topic string, message string) {
 	msg := &sarama.ProducerMessage{Topic: "my_topic", Value: sarama.StringEncoder(message)}
 	pid, offset, err := client.SendMessage(msg)
 	if err != nil {
-		fmt.Printf("send message failed err : %v", err)
+		log.Printf("send message failed err : %v", err)
 		return
 	}
-	fmt.Printf("pid :%v , offset :%v\n", pid, offset)
+	log.Printf("pid :%v , offset :%v\n", pid, offset)
 }
