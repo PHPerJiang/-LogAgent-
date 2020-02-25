@@ -4,9 +4,12 @@ import (
 	"LogAgent/config"
 	"LogAgent/kafka"
 	"LogAgent/taillog"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
+	"go.etcd.io/etcd/clientv3"
 	"gopkg.in/ini.v1"
 )
 
@@ -29,8 +32,20 @@ func run() {
 
 //logagent 入口程序
 func main() {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"localhost:2379"},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		fmt.Printf("etcd connect failed, err: %v", err)
+		return
+	}
+	defer cli.Close()
+	fmt.Println("etcd connection success!")
+	os.Exit(1)
+
 	//1.加载配置文件
-	err := ini.MapTo(cfg, "./config/config.ini")
+	err = ini.MapTo(cfg, "./config/config.ini")
 	if err != nil {
 		log.Printf("load config failed err: %v", err)
 		return
