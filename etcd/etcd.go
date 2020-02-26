@@ -3,10 +3,12 @@ package etcd
 import (
 	"log"
 	"time"
+
+	"go.etcd.io/etcd/clientv3"
 )
 
 var (
-	client *clientv3.client
+	client *clientv3.Client
 )
 
 // Init 初始化etcd
@@ -20,4 +22,5 @@ func Init(address string, timeout time.Duration) (err error) {
 		return
 	}
 	defer cli.Close()
+	return
 }

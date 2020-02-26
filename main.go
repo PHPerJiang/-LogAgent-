@@ -31,7 +31,7 @@ func run() {
 //logagent 入口程序
 func main() {
 	//  加载配置文件
-	err = ini.MapTo(cfg, "./config/config.ini")
+	err := ini.MapTo(cfg, "./config/config.ini")
 	if err != nil {
 		log.Printf("load config failed err: %v", err)
 		return
