@@ -57,7 +57,7 @@ func main() {
 	//测试连接
 	// etcd.Put("/etcd", `[{"path":"/data/webroot/go/src/LogAgent/my.log","topic":"test01"},{"path":"/data/webroot/go/src/LogAgent/my.log","topic":"test02"}]`)
 
-	logconf, err := etcd.Get("/etcd", time.Duration(cfg.Timeout)*time.Millisecond)
+	_, err = etcd.Get("/etcd", time.Duration(cfg.Timeout)*time.Millisecond)
 	if err != nil {
 		log.Printf("get etcd data failed %v", err)
 		return
