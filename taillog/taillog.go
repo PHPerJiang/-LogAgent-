@@ -52,7 +52,10 @@ func (t *TailTask)getTailLines(){
 	for {
 		select{
 		case line := <- t.Instance.Lines:
-			kafka.SendMessag2Kafka(t.Topic, line.Text)
+			kafka.Logchan <- &kafka.LogData{
+				Topic: t.Topic,
+				Data: line.Text,
+			}
 		default:
 			time.Sleep(time.Millisecond * 50)
 		}

@@ -4,6 +4,7 @@ import (
 	"LogAgent/config"
 	"LogAgent/etcd"
 	"LogAgent/kafka"
+	"LogAgent/taillog"
 	"log"
 	"time"
 
@@ -25,7 +26,7 @@ func main() {
 	log.Println("配置文件加载成功")
 
 	//	初始化kafka链接
-	err = kafka.Init([]string{cfg.KafkaConf.Address})
+	err = kafka.Init([]string{cfg.KafkaConf.Address}, cfg, config.KafkaConf.MaxChan)
 	if err != nil {
 		log.Printf("kafka init failed,err:%v\n", err)
 		return
@@ -43,7 +44,7 @@ func main() {
 	//测试连接
 	// etcd.Put("/etcd", `[{"path":"/data/webroot/go/src/LogAgent/my.log","topic":"test01"},{"path":"/data/webroot/go/src/LogAgent/my.log","topic":"test02"}]`)
 
-	_, err := etcd.Get("/etcd", time.Duration(cfg.Timeout)*time.Millisecond)
+	logconf, err := etcd.Get("/etcd", time.Duration(cfg.Timeout)*time.Millisecond)
 	if err != nil {
 		log.Printf("get etcd data failed %v", err)
 		return
@@ -52,11 +53,6 @@ func main() {
 	// for _, v := range logconf {
 	// 	log.Printf("log conf %v", v)
 	// }
-	//	收集日志文件
-	// err = taillog.Init(cfg.TaillogCof.FilePath)
-	// if err != nil {
-	// 	log.Printf("tail init failed,err:%v\n", err)
-	// 	return
-	// }
-	// log.Println("连接tail成功")
+	//启动日志收集管理器
+	taillog.Init(logconf)
 }

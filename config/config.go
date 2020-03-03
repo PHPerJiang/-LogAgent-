@@ -4,6 +4,7 @@ package config
 type KafkaConf struct {
 	Address string `ini:"address"`
 	Topic   string `ini:"topic"`
+	MaxChan int    `ini:"maxchan"`
 }
 
 // TaillogCof 配置
