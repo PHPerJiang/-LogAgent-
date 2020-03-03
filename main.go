@@ -26,7 +26,7 @@ func main() {
 	log.Println("配置文件加载成功")
 
 	//	初始化kafka链接
-	err = kafka.Init([]string{cfg.KafkaConf.Address}, cfg, config.KafkaConf.MaxChan)
+	err = kafka.Init([]string{cfg.KafkaConf.Address}, cfg.KafkaConf.MaxChan)
 	if err != nil {
 		log.Printf("kafka init failed,err:%v\n", err)
 		return
@@ -55,4 +55,5 @@ func main() {
 	// }
 	//启动日志收集管理器
 	taillog.Init(logconf)
+	log.Println("end")
 }

@@ -1,6 +1,9 @@
 package taillog
 
-import "LogAgent/etcd"
+import (
+	"LogAgent/etcd"
+	"log"
+)
 
 var logMgr *tailLogManger
 
@@ -14,7 +17,8 @@ func Init(logConf []*etcd.LogConf) {
 		LogConf: logConf,
 	}
 	//根据获取的配置创建tail
-	for _, conf := range logMgr {
+	for _, conf := range logMgr.LogConf {
 		NewTail(conf.Path, conf.Topic)
+		log.Printf("new tail create success path:%s , topic：%s", conf.Path, conf.Topic)
 	}
 }

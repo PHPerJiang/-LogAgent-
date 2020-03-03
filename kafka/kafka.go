@@ -10,7 +10,7 @@ import (
 var (
 	client sarama.SyncProducer
 	// Logchan log信息
-	Logchan chan *logData
+	Logchan chan *LogData
 )
 
 // LogData 日志信息结构体
@@ -34,10 +34,10 @@ func Init(addrs []string, maxChan int) (err error) {
 }
 
 // 从通道中取出log并发送到kafka
-func getLogByChan(){
+func getLogByChan() {
 	for {
 		select {
-		case logInfo := <- LogData
+		case logInfo := <-Logchan:
 			SendMessag2Kafka(logInfo.Topic, logInfo.Data)
 		default:
 			time.Sleep(time.Millisecond * 50)
