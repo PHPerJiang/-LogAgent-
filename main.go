@@ -6,6 +6,7 @@ import (
 	"LogAgent/kafka"
 	"LogAgent/taillog"
 	"log"
+	"sync"
 	"time"
 
 	"gopkg.in/ini.v1"
@@ -44,7 +45,7 @@ func main() {
 	//测试连接
 	// etcd.Put("/etcd", `[{"path":"/data/webroot/go/src/LogAgent/my.log","topic":"test01"},{"path":"/data/webroot/go/src/LogAgent/my.log","topic":"test02"}]`)
 
-	logconf, err := etcd.Get("/etcd", time.Duration(cfg.Timeout)*time.Millisecond)
+	logconf, err := etcd.Get(cfg.Etcd.Key, time.Duration(cfg.Timeout)*time.Millisecond)
 	if err != nil {
 		log.Printf("get etcd data failed %v", err)
 		return
@@ -55,5 +56,11 @@ func main() {
 	// }
 	//启动日志收集管理器
 	taillog.Init(logconf)
-	log.Println("end")
+	//初始化新配置通道
+	newConfCh := taillog.NewConfChan()
+	//起一个wg防止主程序直接结束
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go etcd.Watcher(cfg.Etcd.Key, newConfCh)
+	wg.Wait()
 }

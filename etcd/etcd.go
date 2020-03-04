@@ -61,3 +61,23 @@ func Get(etcK string, timeout time.Duration) (logconf []*LogConf, err error) {
 	}
 	return
 }
+
+// Watcher 开启一个etcd的监视者
+func Watcher(etcK string, newConfCh chan<- []*LogConf) {
+	resp := client.Watch(context.Background(), etcK)
+	log.Println("Watcher start!")
+	for wresp := range resp {
+		for _, ev := range wresp.Events {
+			newConf := []*LogConf
+			//如果不是删除操作 则发送新配置到newConfCh中，否则发送默认配置，即空
+			if ev.Type != clientv3.EventTypeDelete {
+				err := json.Unmarshal(ev.Kv.Value, &newConf)
+				if err != nil{
+					log.Printf("newConf unmarshal failed %v", err)
+				}
+			}
+			newConfCh <- newConf
+			log.Printf("get new conf %v", newConf)
+		}
+	}
+}
