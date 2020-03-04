@@ -68,11 +68,11 @@ func Watcher(etcK string, newConfCh chan<- []*LogConf) {
 	log.Println("Watcher start!")
 	for wresp := range resp {
 		for _, ev := range wresp.Events {
-			newConf := []*LogConf
+			var newConf []*LogConf
 			//如果不是删除操作 则发送新配置到newConfCh中，否则发送默认配置，即空
 			if ev.Type != clientv3.EventTypeDelete {
 				err := json.Unmarshal(ev.Kv.Value, &newConf)
-				if err != nil{
+				if err != nil {
 					log.Printf("newConf unmarshal failed %v", err)
 				}
 			}

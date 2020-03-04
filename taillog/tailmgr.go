@@ -13,7 +13,7 @@ var (
 
 type tailLogManger struct {
 	LogConf   []*etcd.LogConf
-	taskMap   map[string]*etcd.LogConf
+	taskMap   map[string]*TailTask
 	newConfCh chan []*etcd.LogConf
 }
 
@@ -21,7 +21,7 @@ type tailLogManger struct {
 func Init(logConf []*etcd.LogConf) {
 	logMgr = &tailLogManger{
 		LogConf:   logConf,
-		taskMap:   make(map[string]*etcd.LogConf, 16),
+		taskMap:   make(map[string]*TailTask, 16),
 		newConfCh: make(chan []*etcd.LogConf),
 	}
 	//根据获取的配置创建tail
@@ -39,7 +39,7 @@ func Init(logConf []*etcd.LogConf) {
 func (t *tailLogManger) handleNewConf() {
 	for {
 		select {
-		case newConf <- logMgr.newConfCh:
+		case newConf := <-logMgr.newConfCh:
 			log.Printf("program get new conf %v", newConf)
 		default:
 			time.Sleep(time.Second)
