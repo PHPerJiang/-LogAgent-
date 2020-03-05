@@ -53,8 +53,10 @@ func (t *tailLogManger) handleNewConf() {
 					t.taskMap[mk] = NewTail(newConfItem.Path, newConfItem.Topic)
 					log.Printf("new tailTask create success path:%s , topic：%s", newConfItem.Path, newConfItem.Topic)
 				}
+				//删除新配置里没有旧配置里有的配置
 				if isDelete {
-					log.Printf("配置%v要被删除", taskMapItem.Path)
+					dmk := fmt.Sprintf("%s_%s", taskMapItem.Path, taskMapItem.Topic)
+					t.taskMap[dmk].Cancel()
 				}
 			}
 		default:

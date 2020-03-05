@@ -2,6 +2,7 @@ package taillog
 
 import (
 	"LogAgent/kafka"
+	"context"
 	"log"
 	"time"
 
@@ -17,13 +18,18 @@ type TailTask struct {
 	Path     string
 	Topic    string
 	Instance *tail.Tail
+	Ctx      context.Context
+	Cancel   context.CancelFunc
 }
 
 // NewTail 创建一个tail
 func NewTail(path, topic string) (tailObj *TailTask) {
+	ctx, cancel := context.WithCancel(context.Background())
 	tailObj = &TailTask{
-		Path:  path,
-		Topic: topic,
+		Path:   path,
+		Topic:  topic,
+		Ctx:    ctx,
+		Cancel: cancel,
 	}
 	tailObj.init()
 	return
