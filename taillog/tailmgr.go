@@ -29,7 +29,7 @@ func Init(logConf []*etcd.LogConf) {
 		tailObj := NewTail(conf.Path, conf.Topic)
 		mk := fmt.Sprintf("%s_%s", conf.Path, conf.Topic)
 		logMgr.taskMap[mk] = tailObj
-		log.Printf("new tail create success path:%s , topic：%s", conf.Path, conf.Topic)
+		log.Printf("new tailTask create success path:%s , topic：%s", conf.Path, conf.Topic)
 	}
 	//读配置通道，有新配置进来则打印
 	go logMgr.handleNewConf()
@@ -40,7 +40,23 @@ func (t *tailLogManger) handleNewConf() {
 	for {
 		select {
 		case newConf := <-logMgr.newConfCh:
-			log.Printf("program get new conf %v", newConf)
+			//判断旧配置与新配置的差异
+			for _, taskMapItem := range t.taskMap {
+				//旧配置里没有则新建任务
+				isDelete := true
+				for _, newConfItem := range newConf {
+					if taskMapItem.Path == newConfItem.Path && taskMapItem.Topic == taskMapItem.Topic {
+						isDelete = false
+						continue
+					}
+					mk := fmt.Sprintf("%s_%s", newConfItem.Path, newConfItem.Topic)
+					t.taskMap[mk] = NewTail(newConfItem.Path, newConfItem.Topic)
+					log.Printf("new tailTask create success path:%s , topic：%s", newConfItem.Path, newConfItem.Topic)
+				}
+				if isDelete {
+					log.Printf("配置%v要被删除", taskMapItem.Path)
+				}
+			}
 		default:
 			time.Sleep(time.Second)
 		}
