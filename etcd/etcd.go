@@ -77,7 +77,6 @@ func Watcher(etcK string, newConfCh chan<- []*LogConf) {
 				}
 			}
 			newConfCh <- newConf
-			log.Printf("get new conf %v", newConf)
 		}
 	}
 }

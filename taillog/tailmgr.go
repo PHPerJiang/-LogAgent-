@@ -45,7 +45,7 @@ func (t *tailLogManger) handleNewConf() {
 				//旧配置里没有则新建任务
 				isDelete := true
 				for _, newConfItem := range newConf {
-					if taskMapItem.Path == newConfItem.Path && taskMapItem.Topic == taskMapItem.Topic {
+					if taskMapItem.Path == newConfItem.Path && taskMapItem.Topic == newConfItem.Path {
 						isDelete = false
 						continue
 					}
