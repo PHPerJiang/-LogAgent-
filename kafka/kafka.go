@@ -53,5 +53,5 @@ func SendMessag2Kafka(topic string, message string) {
 		log.Printf("send message failed err : %v", err)
 		return
 	}
-	log.Printf("pid :%v , offset :%v, Topic: %s , Message : %s\n", pid, offset, topic, message)
+	log.Printf("Topic: %s , Message : %s\n", topic, message)
 }
