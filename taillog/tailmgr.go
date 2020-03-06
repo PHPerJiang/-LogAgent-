@@ -3,7 +3,6 @@ package taillog
 import (
 	"LogAgent/etcd"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -29,7 +28,6 @@ func Init(logConf []*etcd.LogConf) {
 		tailObj := NewTail(conf.Path, conf.Topic)
 		mk := fmt.Sprintf("%s_%s", conf.Path, conf.Topic)
 		logMgr.taskMap[mk] = tailObj
-		log.Printf("new tailTask create success path:%s , topic：%s", conf.Path, conf.Topic)
 	}
 	//读配置通道，有新配置进来则打印
 	go logMgr.handleNewConf()
@@ -45,13 +43,12 @@ func (t *tailLogManger) handleNewConf() {
 				//旧配置里没有则新建任务
 				isDelete := true
 				for _, newConfItem := range newConf {
-					if taskMapItem.Path == newConfItem.Path && taskMapItem.Topic == newConfItem.Path {
+					if taskMapItem.Path == newConfItem.Path && taskMapItem.Topic == newConfItem.Topic {
 						isDelete = false
 						continue
 					}
 					mk := fmt.Sprintf("%s_%s", newConfItem.Path, newConfItem.Topic)
 					t.taskMap[mk] = NewTail(newConfItem.Path, newConfItem.Topic)
-					log.Printf("new tailTask create success path:%s , topic：%s", newConfItem.Path, newConfItem.Topic)
 				}
 				//删除新配置里没有旧配置里有的配置
 				if isDelete {

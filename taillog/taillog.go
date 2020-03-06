@@ -50,6 +50,7 @@ func (t *TailTask) init() {
 		log.Printf("init tail failed %v", err)
 		return
 	}
+	log.Printf("new tailTask create success path:%s , topic：%s", t.Path, t.Topic)
 	go t.getTailLines()
 }
 

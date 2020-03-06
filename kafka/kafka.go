@@ -47,11 +47,11 @@ func getLogByChan() {
 
 // SendMessag2Kafka 发送信息到kafka
 func SendMessag2Kafka(topic string, message string) {
-	msg := &sarama.ProducerMessage{Topic: "my_topic", Value: sarama.StringEncoder(message)}
+	msg := &sarama.ProducerMessage{Topic: topic, Value: sarama.StringEncoder(message)}
 	pid, offset, err := client.SendMessage(msg)
 	if err != nil {
 		log.Printf("send message failed err : %v", err)
 		return
 	}
-	log.Printf("pid :%v , offset :%v\n", pid, offset)
+	log.Printf("pid :%v , offset :%v, Topic: %s , Message : %s\n", pid, offset, topic, message)
 }
