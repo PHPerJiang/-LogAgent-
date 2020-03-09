@@ -19,9 +19,15 @@ type Etcd struct {
 	Key     string `ini:"key"`
 }
 
+// ElasticSearch es配置
+type ElasticSearch struct {
+	Address string `ini:"address"`
+}
+
 // Conf 配置
 type Conf struct {
-	KafkaConf  `ini:"kafka"`
-	TaillogCof `ini:"taillog"`
-	Etcd       `ini:"etcd"`
+	KafkaConf     `ini:"kafka"`
+	TaillogCof    `ini:"taillog"`
+	Etcd          `ini:"etcd"`
+	ElasticSearch `ini:"elasticsearch"`
 }
