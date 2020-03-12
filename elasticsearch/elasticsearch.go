@@ -2,7 +2,6 @@ package elasticsearch
 
 import (
 	"context"
-	"log"
 
 	"github.com/olivere/elastic/v7"
 )
@@ -18,7 +17,7 @@ func Init(address string) (err error) {
 }
 
 // CreateIndex 创建索引
-func CreateIndex(indexStr string) {
+func CreateIndex(indexStr string) (err error) {
 	mapping := `{
 		"settings":{
 			"number_of_shards":1,
@@ -28,19 +27,20 @@ func CreateIndex(indexStr string) {
 			"properties":{
 				"log":{
 					"type":"text"
-				},
-				"age":{
-					"type":"integer"
 				}
 			}
 		}
 	}`
+	// defer client.Stop()
 	ctx := context.Background()
-	_, err := client.CreateIndex(indexStr).BodyString(mapping).Do(ctx)
-	if err != nil {
-		log.Printf("create index failed %v", err)
-		return
-	}
-	log.Println("create index success")
-	defer client.Stop()
+	_, err = client.CreateIndex(indexStr).BodyString(mapping).Do(ctx)
+	return
+}
+
+// IndexExists 确认索引是否存在
+func IndexExists(indexStr string) (resp bool, err error) {
+	ctx := context.Background()
+	// defer client.Stop()
+	resp, err = client.IndexExists(indexStr).Do(ctx)
+	return
 }
