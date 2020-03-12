@@ -55,3 +55,30 @@ func SendMessag2Kafka(topic string, message string) {
 	}
 	log.Printf("Topic: %s , Message : %s\n", topic, message)
 }
+
+// ConsumeMessage 消费kafka数据
+func ConsumeMessage(address, topic string) error {
+	consumer, err := sarama.NewConsumer([]string{address}, nil)
+	if err != nil {
+		return err
+	}
+	partitionList, err := consumer.Partitions("test01")
+	if err != nil {
+		return err
+	}
+	log.Println("分区列表：", partitionList)
+	for partion := range partitionList {
+		partitionConsume, err := consumer.ConsumePartition(topic, int32(partion), sarama.OffsetNewest)
+		if err != nil {
+			return err
+		}
+		defer partitionConsume.AsyncClose()
+		go func(sarama.PartitionConsumer) {
+			for msg := range partitionConsume.Messages() {
+				log.Printf("partition : %d , Offset :%d, key:%v , Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
+			}
+		}(partitionConsume)
+	}
+	select {}
+	return err
+}

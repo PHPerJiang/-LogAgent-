@@ -12,13 +12,13 @@ var (
 )
 
 // Init 初始化
-func Init() (err error) {
-	client, err = elastic.NewClient(elastic.SetURL("http://172.81.251.154:9200"))
+func Init(address string) (err error) {
+	client, err = elastic.NewClient(elastic.SetURL(address))
 	return
 }
 
 // CreateIndex 创建索引
-func CreateIndex() {
+func CreateIndex(indexStr string) {
 	mapping := `{
 		"settings":{
 			"number_of_shards":1,
@@ -26,8 +26,8 @@ func CreateIndex() {
 		},
 		"mappings":{
 			"properties":{
-				"name":{
-					"type":"keyword"
+				"log":{
+					"type":"text"
 				},
 				"age":{
 					"type":"integer"
@@ -36,7 +36,7 @@ func CreateIndex() {
 		}
 	}`
 	ctx := context.Background()
-	_, err := client.CreateIndex("student").BodyString(mapping).Do(ctx)
+	_, err := client.CreateIndex(indexStr).BodyString(mapping).Do(ctx)
 	if err != nil {
 		log.Printf("create index failed %v", err)
 		return
