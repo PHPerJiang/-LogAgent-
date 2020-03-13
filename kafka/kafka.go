@@ -79,6 +79,5 @@ func ConsumeMessage(address, topic string) error {
 			}
 		}(partitionConsume)
 	}
-	select {}
 	return err
 }

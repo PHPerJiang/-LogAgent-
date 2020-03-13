@@ -13,6 +13,8 @@ var (
 	client *elastic.Client
 	// ElasticCh 写入es的通道
 	ElasticCh chan *LogInfo
+	indexStr  string
+	typeStr   string
 )
 
 // LogInfo 入es的数据
@@ -22,14 +24,28 @@ type LogInfo struct {
 }
 
 // Init 初始化
-func Init(address string, size int) (err error) {
+func Init(address, indexStrParam, typeStrParam string, size int) (err error) {
 	client, err = elastic.NewClient(elastic.SetURL(address))
+	indexStr = indexStrParam
+	typeStr = typeStrParam
 	ElasticCh = make(chan *LogInfo, size)
+	isExists, err := indexExists(indexStr)
+	if err != nil {
+		log.Printf("indexexists failed %v", err)
+		return
+	}
+	if !isExists {
+		err = createIndex(indexStr)
+		if err != nil {
+			log.Printf("create index failed %v", err)
+			return
+		}
+	}
 	return
 }
 
-// CreateIndex 创建索引
-func CreateIndex(indexStr string) (err error) {
+//创建索引
+func createIndex(indexStr string) (err error) {
 	mapping := `{
 		"settings":{
 			"number_of_shards":1,
@@ -53,8 +69,8 @@ func CreateIndex(indexStr string) (err error) {
 	return
 }
 
-// IndexExists 确认索引是否存在
-func IndexExists(indexStr string) (resp bool, err error) {
+//确认索引是否存在
+func indexExists(indexStr string) (resp bool, err error) {
 	ctx := context.Background()
 	// defer client.Stop()
 	resp, err = client.IndexExists(indexStr).Do(ctx)
@@ -62,18 +78,18 @@ func IndexExists(indexStr string) (resp bool, err error) {
 }
 
 // SendMessag2Elastic 发送数据到es
-func SendMessag2Elastic(indexStr, typeStr string) {
+func SendMessag2Elastic() {
 	for {
 		select {
 		case logitem := <-ElasticCh:
 			id := time.Now().UnixNano()
-			res, err := client.Index().Index(indexStr).Type(typeStr).Id(strconv.Itoa(int(id))).BodyJson(logitem).Do(context.Background())
+			_, err := client.Index().Index(indexStr).Type(typeStr).Id(strconv.Itoa(int(id))).BodyJson(logitem).Do(context.Background())
 			if err != nil {
 				log.Printf("insert log failed %v err", err)
 				return
 			}
 		default:
-			time.Sleep(time.second)
+			time.Sleep(time.Second)
 		}
 	}
 }
