@@ -14,7 +14,6 @@ var (
 )
 
 func main() {
-	logStr := "log"
 	//  加载配置文件
 	err := ini.MapTo(cfg, "../config/config.ini")
 	if err != nil {
@@ -30,20 +29,21 @@ func main() {
 	}
 	log.Println("init elastic success")
 	//判断索引是否存在
-	resp, err := elasticsearch.IndexExists(logStr)
+	resp, err := elasticsearch.IndexExists(cfg.ElasticSearch.index)
 	if err != nil {
 		log.Printf("get index exists failed %v", err)
 		return
 	}
 	//不存在则创建
 	if !resp {
-		err = elasticsearch.CreateIndex(logStr)
+		err = elasticsearch.CreateIndex(cfg.ElasticSearch.index)
 		if err != nil {
 			log.Printf("create index failed%v", err)
 			return
 		}
-		log.Printf("索引 %s 不存在, 已自动创建成功", logStr)
+		log.Printf("索引 %s 不存在, 已自动创建成功", cfg.ElasticSearch.index)
 	}
+
 	//kafka数据入es
 	err = kafka.ConsumeMessage(cfg.KafkaConf.Address, "test01")
 	if err != nil {

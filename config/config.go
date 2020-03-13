@@ -22,6 +22,9 @@ type Etcd struct {
 // ElasticSearch es配置
 type ElasticSearch struct {
 	Address string `ini:"address"`
+	MaxChan int    `ini:"maxchan"`
+	Index   string `ini:"index"`
+	Type    string `ini:"type"`
 }
 
 // Conf 配置
