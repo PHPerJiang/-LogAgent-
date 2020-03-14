@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"LogAgent/elasticsearch"
 	"log"
 	"time"
 
@@ -75,7 +76,11 @@ func ConsumeMessage(address, topic string) error {
 		defer partitionConsume.AsyncClose()
 		go func(sarama.PartitionConsumer) {
 			for msg := range partitionConsume.Messages() {
-				log.Printf("partition : %d , Offset :%d, key:%v , Value:%v", msg.Partition, msg.Offset, msg.Key, msg.Value)
+				//发送数据到队列
+				elasticsearch.ElasticCh <- &elasticsearch.LogInfo{
+					Log:  string(msg.Value),
+					Time: time.Now().Format("2015-01-02 15:04"),
+				}
 			}
 		}(partitionConsume)
 	}

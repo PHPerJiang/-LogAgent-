@@ -19,8 +19,8 @@ var (
 
 // LogInfo 入es的数据
 type LogInfo struct {
-	log  string `json:"log"`
-	time string `json:"time"`
+	Log  string `json:"log"`
+	Time string `json:"time"`
 }
 
 // Init 初始化
@@ -82,13 +82,16 @@ func SendMessag2Elastic() {
 	for {
 		select {
 		case logitem := <-ElasticCh:
+			log.Printf("%v", logitem)
 			id := time.Now().UnixNano()
-			_, err := client.Index().Index(indexStr).Type(typeStr).Id(strconv.Itoa(int(id))).BodyJson(logitem).Do(context.Background())
+			resp, err := client.Index().Index(indexStr).Type(typeStr).Id(strconv.Itoa(int(id))).BodyJson(logitem).Do(context.Background())
 			if err != nil {
 				log.Printf("insert log failed %v err", err)
 				return
 			}
+			log.Printf("id: %v , index ： %v, type : %v", resp.Id, resp.Index, resp.Type)
 		default:
+			log.Println("ElasticCh no data")
 			time.Sleep(time.Second)
 		}
 	}
