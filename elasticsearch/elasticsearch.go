@@ -12,7 +12,7 @@ import (
 var (
 	client *elastic.Client
 	// ElasticCh 写入es的通道
-	ElasticCh chan *LogInfo
+	elasticCh chan *LogInfo
 	indexStr  string
 	typeStr   string
 )
@@ -28,7 +28,7 @@ func Init(address, indexStrParam, typeStrParam string, size int) (err error) {
 	client, err = elastic.NewClient(elastic.SetURL(address))
 	indexStr = indexStrParam
 	typeStr = typeStrParam
-	ElasticCh = make(chan *LogInfo, size)
+	elasticCh = make(chan *LogInfo, size)
 	isExists, err := indexExists(indexStr)
 	if err != nil {
 		log.Printf("indexexists failed %v", err)
@@ -41,6 +41,7 @@ func Init(address, indexStrParam, typeStrParam string, size int) (err error) {
 			return
 		}
 	}
+	go SendMessag2Elastic()
 	return
 }
 
@@ -81,8 +82,7 @@ func indexExists(indexStr string) (resp bool, err error) {
 func SendMessag2Elastic() {
 	for {
 		select {
-		case logitem := <-ElasticCh:
-			log.Printf("%v", logitem)
+		case logitem := <-elasticCh:
 			id := time.Now().UnixNano()
 			resp, err := client.Index().Index(indexStr).Type(typeStr).Id(strconv.Itoa(int(id))).BodyJson(logitem).Do(context.Background())
 			if err != nil {
@@ -91,8 +91,12 @@ func SendMessag2Elastic() {
 			}
 			log.Printf("id: %v , index ： %v, type : %v", resp.Id, resp.Index, resp.Type)
 		default:
-			log.Println("ElasticCh no data")
 			time.Sleep(time.Second)
 		}
 	}
+}
+
+// SendMessage2Chan 发送消息到通道
+func SendMessage2Chan(message *LogInfo) {
+	elasticCh <- message
 }

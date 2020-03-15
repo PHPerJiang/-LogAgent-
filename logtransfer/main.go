@@ -36,8 +36,6 @@ func main() {
 		log.Printf("consmeMessage failed err :%err", err)
 		return
 	}
-	//开启发送数据到es
-	// wg.Add(1)
-	elasticsearch.SendMessag2Elastic()
-	// wg.Wait()
+	//防止程序自己结束
+	select {}
 }

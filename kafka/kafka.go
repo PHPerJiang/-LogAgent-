@@ -73,14 +73,14 @@ func ConsumeMessage(address, topic string) error {
 		if err != nil {
 			return err
 		}
-		defer partitionConsume.AsyncClose()
+		// defer partitionConsume.AsyncClose()
 		go func(sarama.PartitionConsumer) {
 			for msg := range partitionConsume.Messages() {
 				//发送数据到队列
-				elasticsearch.ElasticCh <- &elasticsearch.LogInfo{
+				elasticsearch.SendMessage2Chan(&elasticsearch.LogInfo{
 					Log:  string(msg.Value),
-					Time: time.Now().Format("2015-01-02 15:04"),
-				}
+					Time: time.Now().Format("2006-01-02 15:04:05"),
+				})
 			}
 		}(partitionConsume)
 	}
