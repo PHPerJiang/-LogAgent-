@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,10 +44,28 @@ func PostGroup() {
 	}
 }
 
+type Persion struct {
+	Name string `json:"name",binding:"required"`
+	Age  int    `json:"age"`
+}
+
+//BindJsonPostTest 绑定参数的请求获取
+func BindJsonPostTest() {
+	var p Persion
+	router.POST("/", func(c *gin.Context) {
+		err := c.ShouldBindJSON(&p)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		c.JSON(200, p)
+	})
+}
+
 func main() {
 	Init()
 	// GetTest()
 	// DefaultGetTest()
-	PostGroup()
+	// PostGroup()
+	BindJsonPostTest()
 	Run()
 }
