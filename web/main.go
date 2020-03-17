@@ -45,8 +45,8 @@ func PostGroup() {
 }
 
 type Persion struct {
-	Name string `json:"name",binding:"required"`
-	Age  int    `json:"age"`
+	Name string `json:"name" binding:"required" uri:"name"`
+	Age  int    `json:"age" uri:"age"`
 }
 
 //BindJsonPostTest 绑定参数的请求获取
@@ -61,11 +61,22 @@ func BindJsonPostTest() {
 	})
 }
 
+func BindUrlTest() {
+	var p Persion
+	router.GET("/:name/:age", func(c *gin.Context) {
+		if err := c.ShouldBindUri(&p); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		c.JSON(200, p)
+	})
+}
+
 func main() {
 	Init()
 	// GetTest()
 	// DefaultGetTest()
 	// PostGroup()
-	BindJsonPostTest()
+	// BindJsonPostTest()
+	BindUrlTest()
 	Run()
 }
