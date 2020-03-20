@@ -103,7 +103,7 @@ func Redirect() {
 //AsyncGoroutines  异步请求
 func AsyncGoroutines() {
 	router.GET("/async", func(c *gin.Context) {
-		cp := c.Copy()
+		cp := c.Copy() //异步必须用content的拷贝值
 		go func() {
 			time.Sleep(time.Second * 3)
 			log.Println(cp.Request.URL.Path)
@@ -119,6 +119,26 @@ func SyncGoroutines() {
 	})
 }
 
+//MiddleWare 中间件
+func MiddleWare() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		now := time.Now()
+		c.Set("middleName", "MiddleWare")
+		c.Next() //自定义中间件必须要使用next函数加载
+		t := time.Since(now)
+		log.Printf("load middleName speed:%v", t)
+	}
+}
+
+//UseMiddleWare 使用中间件
+func UseMiddleWare() {
+	router.Use(MiddleWare())
+	router.GET("/middleware", func(c *gin.Context) {
+		name, _ := c.Get("middleName")
+		c.JSON(http.StatusOK, gin.H{"middleName:": name})
+	})
+}
+
 func main() {
 	Init()
 	// GetTest()
@@ -128,7 +148,8 @@ func main() {
 	// BindUrlTest()
 	// LoadHtmlGlob()
 	// LoadHtmlFiles()
-	AsyncGoroutines()
-	SyncGoroutines()
+	// AsyncGoroutines()
+	// SyncGoroutines()
+	UseMiddleWare()
 	Run()
 }
