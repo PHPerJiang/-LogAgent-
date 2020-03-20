@@ -139,6 +139,44 @@ func UseMiddleWare() {
 	})
 }
 
+//Cookie 使用cookie
+func Cookie() {
+	router.GET("/cookie", func(c *gin.Context) {
+		cookie, err := c.Cookie("Gopher")
+		if err != nil {
+			log.Printf("no cookie %v", err)
+			c.SetCookie("Gopher", "value", 60, "/", "", false, true)
+			return
+		}
+		log.Printf("cookie: %v", cookie)
+	})
+}
+
+//CookieMiddleWare cookie中间件
+func CookieMiddleWare() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.SetCookie("Gopher", "Gopher", 60, "/", "", false, true)
+		name, err := c.Cookie("Gopher")
+		if err != nil {
+			log.Printf("no cookie! err:%v", err)
+			c.JSON(http.StatusNonAuthoritativeInfo, "failed")
+			c.Abort()
+		}
+		if name != "Gopher" {
+			c.JSON(http.StatusNonAuthoritativeInfo, "failed")
+			c.Abort()
+		}
+		c.Next()
+	}
+}
+
+//UseCookieMiddleWare 使用cookie中间件
+func UseCookieMiddleWare() {
+	router.GET("/cookiemiddleware", CookieMiddleWare(), func(c *gin.Context) {
+		c.JSON(http.StatusOK, "success")
+	})
+}
+
 func main() {
 	Init()
 	// GetTest()
@@ -150,6 +188,8 @@ func main() {
 	// LoadHtmlFiles()
 	// AsyncGoroutines()
 	// SyncGoroutines()
-	UseMiddleWare()
+	// UseMiddleWare()
+	// Cookie()
+	UseCookieMiddleWare()
 	Run()
 }
