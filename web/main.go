@@ -1,7 +1,9 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -71,12 +73,62 @@ func BindUrlTest() {
 	})
 }
 
+// LoadHtmlGlob 加载模板文件夹
+func LoadHtmlGlob() {
+	router.LoadHTMLGlob("templates/*")
+	router.GET("/web", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"title": "i am Gopher!",
+		})
+	})
+}
+
+//LoadHtmlFiles 加载模板文件
+func LoadHtmlFiles() {
+	router.LoadHTMLFiles("templates/index.html")
+	router.GET("/web", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"title": "i am Gopher!",
+		})
+	})
+}
+
+// Redirect 重定向
+func Redirect() {
+	router.GET("/web", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "http://www.baidu.com")
+	})
+}
+
+//AsyncGoroutines  异步请求
+func AsyncGoroutines() {
+	router.GET("/async", func(c *gin.Context) {
+		cp := c.Copy()
+		go func() {
+			time.Sleep(time.Second * 3)
+			log.Println(cp.Request.URL.Path)
+		}()
+	})
+}
+
+//SyncGoroutines 同步请求
+func SyncGoroutines() {
+	router.GET("/sync", func(c *gin.Context) {
+		time.Sleep(time.Second * 3)
+		c.Redirect(http.StatusMovedPermanently, "https://www.baidu.com")
+	})
+}
+
 func main() {
 	Init()
 	// GetTest()
 	// DefaultGetTest()
 	// PostGroup()
 	// BindJsonPostTest()
-	BindUrlTest()
+	// BindUrlTest()
+	// LoadHtmlGlob()
+	// LoadHtmlFiles()
+	AsyncGoroutines()
+	SyncGoroutines()
 	Run()
 }
