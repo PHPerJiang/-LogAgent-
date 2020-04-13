@@ -15,6 +15,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/olivere/elastic/v7 v7.0.12
+	github.com/stretchr/testify v1.4.0
 	go.etcd.io/etcd v3.3.18+incompatible
 	go.uber.org/zap v1.14.0 // indirect
 	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d // indirect
