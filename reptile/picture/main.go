@@ -5,27 +5,42 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"strconv"
+	"time"
 )
 
-func GetHtml(url string) (string, error) {
-	resp, err := http.Get(url)
+func GetHtmlUrls(url string) (urls []string) {
+	resp, _ := http.Get(url)
+	urls = make([]string, 0)
 	defer resp.Body.Close()
-	if err != nil {
-		return "", err
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	return string(body), err
-}
-func main() {
-	body, err := GetHtml("https://www.163.com")
-	if err != nil {
-		fmt.Printf("get bofy failed %v", err)
-		return
-	}
+	body, _ := ioutil.ReadAll(resp.Body)
 	reg := `<img[\s\S]+?src="(http[\s\S]+?)"`
 	re := regexp.MustCompile(reg)
-	urls := re.FindAllStringSubmatch(body, -1)
-	for _, ret := range urls {
-		fmt.Println(ret[1])
+	urlsArr := re.FindAllStringSubmatch(string(body), -1)
+	fmt.Println("捕获图片：", len(urlsArr), "张")
+	for _, ret := range urlsArr {
+		urls = append(urls, ret[1])
 	}
+	return urls
+}
+
+func DownImages(urls []string) {
+	for _, url := range urls {
+		fmt.Println(url)
+		resp, _ := http.Get(url)
+		defer resp.Body.Close()
+		content, _ := ioutil.ReadAll(resp.Body)
+		filename := "/Users/smzdm/go/src/LogAgent/reptile/picture/images/" + strconv.Itoa(int(time.Now().UnixNano())) + ".jpg"
+		err := ioutil.WriteFile(filename, content, 0644)
+		if err != nil {
+			fmt.Printf("下载失败, err %v", err)
+		} else {
+			fmt.Println("下载成功")
+		}
+	}
+}
+
+func main() {
+	urls := GetHtmlUrls("https://www.163.com")
+	DownImages(urls)
 }
