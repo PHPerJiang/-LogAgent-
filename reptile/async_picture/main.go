@@ -43,6 +43,7 @@ func getImgUrls(url string) {
 
 //下载图片
 func downImg(imgUrl string) {
+	wg.Add(1)
 	resp, err := http.Get(imgUrl)
 	defer resp.Body.Close()
 	handleEerr(err)
@@ -52,6 +53,7 @@ func downImg(imgUrl string) {
 	err = ioutil.WriteFile(filename, body, 0644)
 	handleEerr(err)
 	log.Println(filename + " download success!")
+	wg.Done()
 }
 
 func main() {
@@ -60,10 +62,8 @@ func main() {
 	for {
 		select {
 		case url := <-urlChan:
-			log.Println(url)
-			downImg(url)
+			go downImg(url)
 		default:
-			log.Println("wait...")
 			time.Sleep(time.Second)
 		}
 	}
