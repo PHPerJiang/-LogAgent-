@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -13,9 +12,10 @@ import (
 )
 
 var (
-	urlChan chan string
-	wg      sync.WaitGroup
-	regs    = map[string]string{
+	urlChan  chan string
+	pageChan chan string
+	wg       sync.WaitGroup
+	regs     = map[string]string{
 		"imgUrl":  `<img[\s\S]+?src=['"](http[^'"]+?\.(?:jpg|jpeg|png))[^>]*>`,
 		"pageUrl": `<a[\s\S]+?href="(https://wiki.smzdm.com/kongtiao/p[\s\S]+?\/)"`,
 	}
@@ -26,6 +26,7 @@ var (
 
 func init() {
 	urlChan = make(chan string, 10000)
+	pageChan = make(chan string, 100)
 	pageMap = make(map[string]string, 0)
 	imageMap = make(map[string]string, 0)
 }
@@ -51,15 +52,31 @@ func getImgUrls(url string) {
 	for _, v := range urlSlice {
 		urlChan <- v[1]
 	}
+	fmt.Println("共抓取到" + strconv.Itoa(len(urlChan)) + "张图片")
 	//匹配页面中的pageurl
 	re = regexp.MustCompile(regs["pageUrl"])
 	pageUrlSlice := re.FindAllStringSubmatch(string(body), -1)
 	for _, v := range pageUrlSlice {
 		if _, ok := pageMap[v[1]]; !ok {
 			pageMap[v[1]] = v[1]
+			pageChan <- v[1]
 		}
 	}
-	os.Exit(0)
+	fmt.Println("共抓取到" + strconv.Itoa(len(pageChan)) + "个其他分页")
+	wg.Done()
+}
+
+//
+func getPage() {
+	for {
+		select {
+		case pageUrl := <-pageChan:
+			wg.Add(1)
+			go getImgUrls(pageUrl)
+		default:
+			time.Sleep(time.Second)
+		}
+	}
 }
 
 //下载图片
@@ -74,7 +91,7 @@ func downImg(taskID int) {
 			handleEerr(err)
 			body, err := ioutil.ReadAll(resp.Body)
 			handleEerr(err)
-			filename := "/Users/smzdm/go/src/LogAgent/reptile/async_picture/images/" + strconv.Itoa(int(time.Now().Nanosecond())) + ".jpg"
+			filename := "/Users/smzdm/go/src/LogAgent/reptile/async_picture/images/taskID:" + strconv.Itoa(taskID) + "&time:" + strconv.Itoa(int(time.Now().Nanosecond())) + ".jpg"
 			err = ioutil.WriteFile(filename, body, 0644)
 			handleEerr(err)
 			log.Println(filename + " download success!")
@@ -84,12 +101,18 @@ func downImg(taskID int) {
 	wg.Done()
 }
 
-func main() {
-	getImgUrls("https://wiki.smzdm.com/kongtiao/")
-	fmt.Println("共抓取到" + strconv.Itoa(len(urlChan)) + "张图片")
+//起多个协程并发下载
+func multiDown() {
 	for i := 1; i <= taskNum; i++ {
 		wg.Add(1)
 		go downImg(i)
 	}
+}
+
+func main() {
+	wg.Add(1)
+	getImgUrls("https://wiki.smzdm.com/kongtiao/")
+	go getPage()
+	multiDown()
 	wg.Wait()
 }
